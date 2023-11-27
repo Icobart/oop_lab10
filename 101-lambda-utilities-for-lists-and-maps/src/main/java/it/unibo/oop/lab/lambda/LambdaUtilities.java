@@ -117,7 +117,11 @@ public final class LambdaUtilities {
          *
          * Keep in mind that a map can be iterated through its forEach method
          */
-        return null;
+        final Map<K, V> mfill = new LinkedHashMap<>();
+        map.forEach((k, v) -> {
+            mfill.put(k, v.orElse(def.get()));
+        });
+        return mfill;
     }
 
     /**
