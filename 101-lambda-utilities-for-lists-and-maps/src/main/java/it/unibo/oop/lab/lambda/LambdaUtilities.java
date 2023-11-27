@@ -61,7 +61,11 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Optional.filter
          */
-        return null;
+        final List<Optional<T>> app = new ArrayList<>(list.size());
+        list.forEach(i -> {
+            app.add(Optional.of(i).filter(pre));
+        });
+        return app;
     }
 
     /**
