@@ -2,6 +2,8 @@ package it.unibo.oop.lab.lambda;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +86,17 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Map.merge
          */
-        return null;
+        final Map<R, Set<T>> m = new LinkedHashMap<>();
+        list.forEach(i -> {
+            m.merge(op.apply(i), Set.of(i), LambdaUtilities::regroup);
+        });
+        return m;
+    }
+
+    private static final <T> Set<T> regroup (final Set <? extends T> s1, final Set<? extends T> s2) {
+        final var newset = new LinkedHashSet<T>(s1);
+        newset.addAll(s2);
+        return newset;
     }
 
     /**
