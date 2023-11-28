@@ -1,24 +1,30 @@
 package it.unibo.mvc;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
+
+import it.unibo.mvc.Configuration.Builder;
 
 /**
  */
 public final class DrawNumberApp implements DrawNumberViewObserver {
-    private static final int MIN = 0;
-    private static final int MAX = 100;
-    private static final int ATTEMPTS = 10;
-
+    
     private final DrawNumber model;
     private final List<DrawNumberView> views;
 
     /**
+     * @param config the path of the configuration file
      * @param views
      *            the views to attach
      */
-    public DrawNumberApp(final DrawNumberView... views) {
+    public DrawNumberApp(final String config, final DrawNumberView... views) {
         /*
          * Side-effect proof
          */
@@ -27,7 +33,48 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        
+        final Builder setup = new Builder();
+        try(var readVar = new BufferedReader(new InputStreamReader(
+            ClassLoader.getSystemResourceAsStream(config)))){
+            for(var saveString = readVar.readLine(); saveString!=null; saveString=readVar.readLine()) {
+                final StringTokenizer lineRead = new StringTokenizer(saveString);
+                final List<String> line = new ArrayList<>();
+                while(lineRead.hasMoreElements()) {
+                    line.add(lineRead.nextToken());
+                }
+                if(line.size() == 2) {
+                    if(line.contains("minimum:")) {
+                        setup.setMin(Integer.parseInt(line.get(1)));
+                    }
+                    else if(line.contains("maximum:")) {
+                        setup.setMax(Integer.parseInt(line.get(1)));
+                    }
+                    else if(line.contains("attempts:")) {
+                        setup.setAttempts(Integer.parseInt(line.get(1)));
+                    }
+                } else {
+                    displayError(saveString + " not enough information");
+                }
+            }
+        } catch(IOException | NumberFormatException e) {
+            displayError(e.getMessage());
+        }
+        final Configuration builder = setup.build();
+        if(builder.isConsistent()) {
+            this.model = new DrawNumberImpl(builder);
+        } else {
+            displayError("inconsistent configuration: minimum: "
+            + builder.getMin() + " maximum: " + builder.getMax()
+            + " attempts: " + builder.getAttempts());
+            this.model = new DrawNumberImpl(new Builder().build());
+        }
+    }
+
+    private void displayError(final String message) {
+        for(final DrawNumberView view : views) {
+            view.displayError(message);
+        }
     }
 
     @Override
