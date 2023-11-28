@@ -1,6 +1,5 @@
 package it.unibo.mvc;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -113,7 +112,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      * @throws FileNotFoundException 
      */
     public static void main(final String... args) throws FileNotFoundException {
-        new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp("config.yml", new DrawNumberViewImpl(), 
+        new DrawNumberViewImpl(), new PrintStreamView(System.out), 
+        new PrintStreamView("output.log"));
     }
 
 }
